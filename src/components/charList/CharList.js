@@ -36,13 +36,15 @@ class CharList extends Component {
     }
 
     renderChars = (arrChars) => {
-        console.log(arrChars)
         const elements = arrChars.map(element => {
-            const imageNotAvailable = element.thumbnail.includes('image_not_available') ? {objectPosition: 'left'} : {};
+            const imageStyle = element.thumbnail.includes('image_not_available') ? {objectPosition: 'left'} : {};
 
             return (
-                <li className="char__item" key={element.id}>
-                    <img src={element.thumbnail} alt={element.name} style={imageNotAvailable}/>
+                <li className="char__item" 
+                    key={element.id}
+                    onClick={() => this.props.onCharSelected(element.id)}
+                >
+                    <img src={element.thumbnail} alt={element.name} style={imageStyle}/>
                     <div className="char__name">{element.name}</div>
                 </li>
             )
