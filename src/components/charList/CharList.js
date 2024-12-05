@@ -6,26 +6,48 @@ import Spinner from "../spinner/Spinner";
 
 class CharList extends Component {
     state = {
-        chars: [],
+        charList: [],
         loading: true,
-        error: false
+        error: false,
+        newItemLoading: false,
+        offset: 1545,
+        charEnded: false
     }
 
     marvelService = new MarvelService();
 
     componentDidMount() {
         console.log('add chars list');
-        this.marvelService
-            .getAllCharacters()
-            .then(res => this.onCharsLoaded(res))
+        this.onRequest();
+    }
+
+    onRequest = (offset) => {
+        this.onCharListLoading();
+        this.marvelService.getAllCharacters(offset)
+            .then(res => this.onCharListLoaded(res))
             .catch(this.onError);
     }
 
-    onCharsLoaded = (chars) => {
+    onCharListLoading = () => {
         this.setState({
-            chars, 
-            loading: false
+            newItemLoading: true
         })
+    }
+    
+    onCharListLoaded = (newCharList) => {
+        let ended = false;
+
+        if (newCharList.length < 9) {
+            ended = true
+        }
+
+        this.setState(({charList, offset}) => ({
+            charList: [...charList, ...newCharList],
+            loading: false,
+            newItemLoading: false,
+            offset: offset + 9,
+            charEnded: ended
+        }))
     }
 
     onError = () => {
@@ -55,10 +77,10 @@ class CharList extends Component {
     }
        
     render() {
-        const {chars, loading, error} = this.state;
+        const {charList, loading, error, newItemLoading, offset, charEnded} = this.state;
         const errorMessage = error ? <ErrorMessage/> : null;
         const spinner = loading ? <Spinner/> : null;
-        const content = !(loading || error) ? this.renderChars(chars) : null;
+        const content = !(loading || error) ? this.renderChars(charList) : null;
 
         return (
             <div className="char__list">
@@ -66,7 +88,11 @@ class CharList extends Component {
                 {spinner}
                 {content}
 
-                <button className="button button__main button__long">
+                <button className="button button__main button__long"
+                    disabled={newItemLoading}
+                    onClick={() => this.onRequest(offset)}
+                    style={{'display': charEnded ? 'none':'block'}}
+                >
                     <div className="inner">load more</div>
                 </button>
             </div>
