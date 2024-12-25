@@ -1,4 +1,4 @@
-import { Component } from "react";
+import { Component, createRef } from "react";
 import MarvelService from "../../services/MarvelService"
 import './charList.scss';
 import ErrorMessage from "../errorMessage/ErrorMessage";
@@ -10,7 +10,7 @@ class CharList extends Component {
         loading: true,
         error: false,
         newItemLoading: false,
-        offset: 1545,
+        offset: 210,
         charEnded: false
     }
 
@@ -57,17 +57,49 @@ class CharList extends Component {
         })
     }
 
+    itemRefs = [];
+
+    setRef = (ref) => {
+        this.itemRefs.push(ref);
+    }
+
+    focusOnItem = (index) => {
+        console.log(index)
+        // вариант чуть сложнее, и с классом и с фокусом
+        // Но в теории можно оставить только фокус, и его в стилях использовать вместо класса
+        // На самом деле, решение с css-классом можно сделать, вынеся персонажа
+        // в отдельный компонент. Но кода будет больше, появится новое состояние
+        // и не факт, что мы выиграем по оптимизации за счет большего кол-ва элементов
+
+        // По возможности, не злоупотребляйте рефами, только в крайних случаях
+        this.itemRefs.forEach(item => item.classList.remove('char__item_selected'));
+        this.itemRefs[index].classList.add('char__item_selected');
+        this.itemRefs[index].focus();
+    }
+
     renderChars = (arrChars) => {
-        const elements = arrChars.map(element => {
+        const elements = arrChars.map((element, i) => {
             const imageStyle = element.thumbnail.includes('image_not_available') ? {objectPosition: 'left'} : {};
 
+            const classes = 'char__item' + (element.id === this.props.charId ? ' char__item_selected' : '');
+
             return (
-                <li className="char__item" 
+                <li className={classes}
+                    tabIndex={0}
+                    ref={this.setRef}
                     key={element.id}
-                    onClick={() => this.props.onCharSelected(element.id)}
-                >
-                    <img src={element.thumbnail} alt={element.name} style={imageStyle}/>
-                    <div className="char__name">{element.name}</div>
+                    onClick={() => {
+                        this.props.onCharSelected(element.id);
+                        this.focusOnItem(i);
+                    }}
+                    onKeyPress={(e) => {
+                        if (e.key === ' ' || e.key === "Enter") {
+                            this.props.onCharSelected(element.id);
+                            this.focusOnItem(i);
+                        }
+                    }}>
+                        <img src={element.thumbnail} alt={element.name} style={imageStyle}/>
+                        <div className="char__name">{element.name}</div>
                 </li>
             )
         });

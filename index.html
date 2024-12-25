@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="uk">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Resizable Square with Interact.js</title>
+    <!-- Підключаємо interact.js через CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/interactjs/dist/interact.min.js"></script>
+  </head>
+  <body>
+    <svg
+      width="1605"
+      height="998"
+      class="house-view-layer"
+      id="controlHandles"
+      style="display: block"
+    >
+      <rect class="back-rect" x="0" y="0" width="1605" height="998"></rect>
+      <path
+        fill="#5B5959"
+        d="M1147.2017441860467,597.5825581395349 1278.961046511628,597.5825581395349 1278.961046511628,862.2209302325581 1147.2017441860467,862.2209302325581 1147.2017441860467,597.5825581395349Z"
+        class="control-rect no-stroke"
+      ></path>
+      <circle
+        cx="1147.2017441860467"
+        cy="597.5825581395349"
+        r="30"
+        fill="green"
+        class="control-point"
+        pindex="0"
+      ></circle>
+      <circle
+        cx="1278.961046511628"
+        cy="597.5825581395349"
+        r="30"
+        fill="red"
+        class="control-point"
+        pindex="1"
+      ></circle>
+      <circle
+        cx="1147.2017441860467"
+        cy="862.2209302325581"
+        r="30"
+        fill="green"
+        class="control-point"
+        pindex="2"
+      ></circle>
+      <circle
+        cx="1278.961046511628"
+        cy="862.2209302325581"
+        r="30"
+        fill="red"
+        class="control-point"
+        pindex="3"
+      ></circle>
+    </svg>
+    <script>
+        const controlPoints = document.querySelectorAll(".control-point");
+        const path = document.querySelector("path"); // Перший path в SVG
+        let currentControlPoint = null;
+        let startX = 0,
+          startY = 0;
+
+        // Функція для оновлення координат у path
+        function updatePath() {
+          const points = [];
+          controlPoints.forEach((point) => {
+            const cx = parseFloat(point.getAttribute("cx"));
+            const cy = parseFloat(point.getAttribute("cy"));
+            points.push({ x: cx, y: cy });
+          });
+
+          // Обновляємо атрибут 'd' в path
+          path.setAttribute(
+            "d",
+            `M${points[0].x},${points[0].y} 
+                            L${points[1].x},${points[1].y} 
+                            L${points[3].x},${points[3].y} 
+                            L${points[2].x},${points[2].y} 
+                            Z`
+          );
+        }
+
+        // Функція для обробки початку перетягування
+        controlPoints.forEach((point) => {
+          point.addEventListener("mousedown", (e) => {
+            currentControlPoint = point;
+            startX = e.clientX - parseFloat(point.getAttribute("cx"));
+            startY = e.clientY - parseFloat(point.getAttribute("cy"));
+
+            // Запускаємо відслідковування руху
+            function onMouseMove(event) {
+              if (currentControlPoint) {
+                const newCX = event.clientX - startX;
+                const newCY = event.clientY - startY;
+                currentControlPoint.setAttribute("cx", newCX);
+                currentControlPoint.setAttribute("cy", newCY);
+
+                // Оновлюємо path
+                updatePath();
+              }
+            }
+
+            // Зупиняємо перетягування
+            function onMouseUp() {
+              document.removeEventListener("mousemove", onMouseMove);
+              document.removeEventListener("mouseup", onMouseUp);
+            }
+
+            document.addEventListener("mousemove", onMouseMove);
+            document.addEventListener("mouseup", onMouseUp);
+          });
+        });
+
+        // Ініціалізуємо шлях після завантаження сторінки
+        updatePath();
+    </script>
+  </body>
+</html>
