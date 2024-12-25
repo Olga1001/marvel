@@ -1,4 +1,5 @@
-import { Component, Children, cloneElement, createRef  } from "react";
+import { Component, Children, cloneElement, createRef } from "react";
+import { createPortal } from 'react-dom';
 import AppHeader from "../appHeader/AppHeader";
 import RandomChar from "../randomChar/RandomChar";
 import CharList from "../charList/CharList";
@@ -54,7 +55,8 @@ class Counter extends Component {
 
 class App extends Component {
     state = {
-        selectedChar: null
+        selectedChar: null,
+        appContent: null
     }
     myRef = createRef();
 
@@ -85,10 +87,13 @@ class App extends Component {
             <div className="app">
                 <AppHeader/>
                 <main>
-                    <div>
+                    <Portal>
+                        <Msg/>
+                    </Portal>
+                    {/* <div>
                         <input ref={this.setInputRef} type="text"/>
                         <textarea onClick={this.onFirstFocus}></textarea>
-                    </div>
+                    </div> */}
                     {/* <TextInput ref={this.myRef}/> */}
                     {/* <Counter render={counter => (
                         <Message counter={counter}/>
@@ -107,10 +112,33 @@ class App extends Component {
                         </ErrorBondary>
                     </div>
                     <img className="bg-decoration" src={decoration} alt="vision"/>
+                    {
+                        createPortal(<Msg/>, document.querySelector('#root'))
+                    }
                 </main>
             </div>
         )
     }
+}
+
+const Portal = (props) => {
+    const node = document.createElement('div');
+    document.body.appendChild(node);
+
+    return createPortal(props.children, node);
+}
+
+const Msg = () => {
+    return (
+        <div style={{
+            'backgroundColor': 'red',
+            'position': 'fixed',
+            'right': '0',
+            'top': '0'
+        }}>
+            Hello
+        </div>
+    )
 }
 
 class TextInput extends Component {
