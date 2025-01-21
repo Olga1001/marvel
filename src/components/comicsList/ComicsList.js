@@ -1,4 +1,5 @@
 import { useState, useEffect, useMemo } from "react";
+import {Link } from 'react-router';
 import './comicsList.scss';
 import uw from '../../resources/img/UW.png';
 import xMen from '../../resources/img/x-men.png';
@@ -46,12 +47,12 @@ const ComicsList = () => {
         const elements = arrComicsList.map((element, i) => {
             return (
                 <li className="comics__item"
-                    key={element.id}>
-                    <a href="#">
+                    key={i}>
+                    <Link to={`/comics/${element.id}`}>
                         <img src={element.thumbnail} alt={element.title} className="comics__item-img"/>
                         <div className="comics__item-name">{element.title}</div>
                         <div className="comics__item-price">{element.price}</div>
-                    </a>
+                    </Link>
                 </li>
             )
         })

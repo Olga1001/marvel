@@ -1,5 +1,6 @@
 
 import { useEffect, useState } from 'react';
+import { Link } from 'react-router-dom';
 import Spinner from '../spinner/Spinner';
 import ErrorMessage from '../errorMessage/ErrorMessage';
 import useMarvelService from '../../services/MarvelService';
@@ -71,21 +72,23 @@ const View = ({char}) => {
             </div>
             <div className="char__descr">{description} </div>
             <div className="char__comics">Comics:</div>
-            <ul className="char__comics-list">
+            <div className="char__comics-list">
                 {
                     comics.map((item, i) => {
                        
                         if (i > 9) return
+                        const id = item.resourceURI.split('comics/')[1];
                         return (
-                            <li className="char__comics-item" 
-                                key={i}>
-                                {item.name}
-                            </li>
+                            <Link 
+                                to={`/comics/${id}`} 
+                                className="char__comics-item" 
+                                key={i}>{item.name}
+                            </Link>
                         )
                     })
                 }
                 {comics.length <= 0 ? 'There is no comics with this  character' : null}
-            </ul>
+            </div>
         </>
     )
 }
