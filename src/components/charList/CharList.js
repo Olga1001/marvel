@@ -1,6 +1,8 @@
-import { useEffect, useState, useRef } from "react";
-import useMarvelService from "../../services/MarvelService"
+import { useEffect, useState, useRef, createRef, useCallback } from "react";
+import {CSSTransition, TransitionGroup} from 'react-transition-group';
+
 import './charList.scss';
+import useMarvelService from "../../services/MarvelService"
 import ErrorMessage from "../errorMessage/ErrorMessage";
 import Spinner from "../spinner/Spinner";
 
@@ -10,6 +12,7 @@ const CharList = (props) => {
     const [newItemLoading, setNewItemLoading] = useState(false);
     const [offset, setOffset] = useState(210);
     const [charEnded, setCharEnded] = useState(false);
+    const [charSelected, setCharSelected] = useState(null);
 
     const {loading, error, getAllCharacters} = useMarvelService();
 
@@ -34,61 +37,56 @@ const CharList = (props) => {
 
         setCharList(charList => [...charList, ...newCharList]);
        
-        setNewItemLoading(newItemLoading => false);
+        setNewItemLoading(false);
         setOffset(offset => offset + 9);
-        setCharEnded(charEnded => ended)
-    }
-
-    const itemRefs = useRef([]);
-    
-    const focusOnItem = (index) => {
-        console.log(index)
-        // вариант чуть сложнее, и с классом и с фокусом
-        // Но в теории можно оставить только фокус, и его в стилях использовать вместо класса
-        // На самом деле, решение с css-классом можно сделать, вынеся персонажа
-        // в отдельный компонент. Но кода будет больше, появится новое состояние
-        // и не факт, что мы выиграем по оптимизации за счет большего кол-ва элементов
-
-        // По возможности, не злоупотребляйте рефами, только в крайних случаях
-        itemRefs.current.forEach(item => item.classList.remove('char__item_selected'));
-        itemRefs.current[index].classList.add('char__item_selected');
-        itemRefs.current[index].focus();
+        setCharEnded(ended)
     }
 
     const renderChars = (arrChars) => {
         const elements = arrChars.map((element, i) => {
             const imageStyle = element.thumbnail.includes('image_not_available') ? {objectPosition: 'left'} : {};
-
-            const classes = 'char__item' + (element.id === props.charId ? ' char__item_selected' : '');
+     
+            const classes = 'char__item' + (element.id === props.charId || i == charSelected ? ' char__item_selected' : '');
+            const nodeRef = createRef(null);
+            const duration = i * 100;
 
             return (
-                <li className={classes}
-                    tabIndex={0}
-                    ref={el => itemRefs.current[i] = el}
+                <CSSTransition 
+                    nodeRef={nodeRef} 
+                    timeout={duration} 
                     key={element.id}
-                    onClick={() => {
-                        props.onCharSelected(element.id);
-                        focusOnItem(i);
-                    }}
-                    onKeyPress={(e) => {
-                        if (e.key === ' ' || e.key === "Enter") {
-                            props.onCharSelected(element.id);
-                            focusOnItem(i);
-                        }
-                    }}>
-                        <img src={element.thumbnail} alt={element.name} style={imageStyle}/>
-                        <div className="char__name">{element.name}</div>
-                </li>
+                    classNames="char__item">
+                        <li className={classes}
+                            tabIndex={0}
+                            ref={nodeRef}
+                            key={element.id}
+                            onClick={() => {
+                                props.onCharSelected(element.id);
+                                setCharSelected(i)
+                            }}
+                            onKeyPress={(e) => {
+                                if (e.key === ' ' || e.key === "Enter") {
+                                    props.onCharSelected(element.id);
+                                    setCharSelected(i)
+                                }
+                            }}>
+                                <img src={element.thumbnail} alt={element.name} style={imageStyle}/>
+                                <div className="char__name">{element.name}</div>
+                        </li>
+                </CSSTransition>
             )
         });
         return (
-            <ul className="char__grid">{elements}</ul>
+            <ul className="char__grid">
+                <TransitionGroup component={null}>
+                    {elements}
+                </TransitionGroup>
+            </ul>
         )
     }
     const items = renderChars(charList);
     const errorMessage = error ? <ErrorMessage/> : null;
     const spinner = loading && !newItemLoading ? <Spinner/> : null;
-    // const content = !(loading || error) ? items : null;
 
     console.log('CharList')
     return (
@@ -96,7 +94,6 @@ const CharList = (props) => {
             {errorMessage}
             {spinner}
             {items}
-            {/* {content} */}
 
             <button className="button button__main button__long"
                 disabled={newItemLoading}
