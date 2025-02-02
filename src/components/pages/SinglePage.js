@@ -1,15 +1,14 @@
 import { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
 
-import Spinner from '../spinner/Spinner';
-import ErrorMessage from '../errorMessage/ErrorMessage';
 import AppBanner from '../appBanner/AppBanner';
 import useMarvelService from '../../services/MarvelService';
+import setContent from '../../utils/setContent';
 
 const SinglePage = ({BaseComponent, dataType}) => {
     const {id} = useParams(); // key/value {id: '61788'}
     const [data, setData] = useState(null);
-    const {loading, error, getCharacter, getComic, clearError} = useMarvelService();
+    const {getCharacter, getComic, clearError, process, setProcess} = useMarvelService();
 
     useEffect(() => {
         updateData();
@@ -20,10 +19,10 @@ const SinglePage = ({BaseComponent, dataType}) => {
         
         switch (dataType) {
             case 'comic':
-                getComic(id).then(onDataLoaded);
+                getComic(id).then(onDataLoaded).then(() => setProcess('confirmed'));
                 break;
             case 'character':
-                getCharacter(id).then(onDataLoaded);
+                getCharacter(id).then(onDataLoaded).then(() => setProcess('confirmed'));
         }
     }
 
@@ -31,16 +30,10 @@ const SinglePage = ({BaseComponent, dataType}) => {
         setData(data);
     }
 
-    const errorMessage = error ? <ErrorMessage/> : null;
-    const spinner = loading ? <Spinner/> : null;
-    const content = !(loading || error || !data) ? <BaseComponent data={data}/> : null;
-
     return (
         <>
             <AppBanner/>
-            {errorMessage}
-            {spinner}
-            {content}
+            {setContent(process, BaseComponent, data)}
         </>
     )
 }
