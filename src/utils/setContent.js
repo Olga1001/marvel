@@ -7,16 +7,12 @@ const setContent = (process, Component, data, newItemLoading = false) => {
     switch(process) {
         case 'waiting':
             return <Skeleton/>;
-            break;
         case 'loading':
-            return newItemLoading ? <Component data={data}/> : <Spinner/>;;
-            break;
+            return newItemLoading ? <Component data={data}/> : <Spinner/>;
         case 'confirmed':
             return <Component data={data}/>;
-            break;
         case 'error': 
             return <ErrorMessage/>;
-            break;
         default:
             throw new Error('Unexpected process state');
     }

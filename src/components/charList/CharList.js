@@ -1,4 +1,4 @@
-import { useEffect, useState, useRef, createRef, useCallback } from "react";
+import { useEffect, useState, useRef, useMemo } from "react";
 import {CSSTransition, TransitionGroup} from 'react-transition-group';
 
 import './charList.scss';
@@ -11,14 +11,13 @@ const CharList = (props) => {
     const [newItemLoading, setNewItemLoading] = useState(false);
     const [offset, setOffset] = useState(210);
     const [charEnded, setCharEnded] = useState(false);
-    const [charSelected, setCharSelected] = useState(null);
 
     const {getAllCharacters, process, setProcess} = useMarvelService();
 
     useEffect(() => {
         console.log('add chars list');
         onRequest(offset, true);
-    }, [])
+    }, []) // eslint-disable-line 
 
     const onRequest = (offset, initial) => {
         initial ?  setNewItemLoading(false) : setNewItemLoading(true);
@@ -42,32 +41,38 @@ const CharList = (props) => {
         setCharEnded(ended)
     }
 
+    const itemRefs = useRef([]);
+
+    const focusOnItem = (index) => {
+        itemRefs.current.forEach(item => item.classList.remove('char__item_selected'));
+        itemRefs.current[index].classList.add('char__item_selected');
+        itemRefs.current[index].focus();
+    }
+
     const renderChars = (arrChars) => {
+        console.log('renderChars', arrChars)
         const elements = arrChars.map((element, i) => {
             const imageStyle = element.thumbnail.includes('image_not_available') ? {objectPosition: 'left'} : {};
-     
-            const classes = 'char__item' + (element.id === props.charId || i == charSelected ? ' char__item_selected' : '');
-            const nodeRef = createRef(null);
-            const duration = i * 100;
+            const duration = (i + 1) * 100;
 
             return (
                 <CSSTransition 
-                    nodeRef={nodeRef} 
+                    // nodeRef={itemRefs.current[i]} 
                     timeout={duration} 
                     key={element.id}
                     classNames="char__item">
-                        <li className={classes}
-                            tabIndex={0}
-                            ref={nodeRef}
+                        <li className="char__item"
+                            tabIndex={i}
+                            ref={el => itemRefs.current[i] = el}
                             key={element.id}
                             onClick={() => {
+                                focusOnItem(i);
                                 props.onCharSelected(element.id);
-                                setCharSelected(i)
                             }}
                             onKeyPress={(e) => {
                                 if (e.key === ' ' || e.key === "Enter") {
+                                    focusOnItem(i);
                                     props.onCharSelected(element.id);
-                                    setCharSelected(i)
                                 }
                             }}>
                                 <img src={element.thumbnail} alt={element.name} style={imageStyle}/>
@@ -85,9 +90,13 @@ const CharList = (props) => {
         )
     }
  
+    const elements = useMemo(() => {
+        return setContent(process, () => renderChars(charList), null, newItemLoading);
+    }, [process]); // eslint-disable-line 
+
     return (
         <div className="char__list">
-            {setContent(process, () => renderChars(charList), null, newItemLoading)}
+            {elements}
 
             <button className="button button__main button__long"
                 disabled={newItemLoading}
