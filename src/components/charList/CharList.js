@@ -2,28 +2,8 @@ import { useEffect, useState, useRef, createRef, useCallback } from "react";
 import {CSSTransition, TransitionGroup} from 'react-transition-group';
 
 import './charList.scss';
-import useMarvelService from "../../services/MarvelService"
-import ErrorMessage from "../errorMessage/ErrorMessage";
-import Spinner from "../spinner/Spinner";
-
-const setContent = (process, Component, newItemLoading) => {
-    switch(process) {
-        case 'waiting':
-            return <Spinner/>;
-            break;
-        case 'loading':
-            return newItemLoading ? <Component/> : <Spinner/>;
-            break;
-        case 'confirmed':
-            return <Component/>;
-            break;
-        case 'error': 
-            return <ErrorMessage/>;
-            break;
-        default:
-            throw new Error('Unexpected process state');
-    }
-}
+import useMarvelService from "../../services/MarvelService";
+import setContent from '../../utils/setContent';
 
 const CharList = (props) => {
 
@@ -107,7 +87,7 @@ const CharList = (props) => {
  
     return (
         <div className="char__list">
-            {setContent(process, () => renderChars(charList), newItemLoading)}
+            {setContent(process, () => renderChars(charList), null, newItemLoading)}
 
             <button className="button button__main button__long"
                 disabled={newItemLoading}

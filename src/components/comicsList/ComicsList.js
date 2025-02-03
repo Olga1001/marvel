@@ -1,30 +1,8 @@
 import { useState, useEffect, useMemo } from "react";
 import {Link } from 'react-router';
 import './comicsList.scss';
-import uw from '../../resources/img/UW.png';
-import xMen from '../../resources/img/x-men.png';
-import useMarvelService from '../../services/MarvelService'
-import ErrorMessage from '../errorMessage/ErrorMessage'
-import Spinner from '../spinner/Spinner'
-
-const setContent = (process, Component, newItemLoading) => {
-    switch(process) {
-        case 'waiting':
-            return <Spinner/>;
-            break;
-        case 'loading':
-            return newItemLoading ? <Component/> : <Spinner/>;
-            break;
-        case 'confirmed':
-            return <Component/>;
-            break;
-        case 'error': 
-            return <ErrorMessage/>;
-            break;
-        default:
-            throw new Error('Unexpected process state');
-    }
-}
+import useMarvelService from '../../services/MarvelService';
+import setContent from '../../utils/setContent';
 
 const ComicsList = () => {
     const [comicsList, setComicsList] = useState([]);
@@ -85,7 +63,7 @@ const ComicsList = () => {
 
     return (
         <div className="comics__list">
-            {setContent(process, () => renderComicsList(comicsList), newItemLoading)}
+            {setContent(process, () => renderComicsList(comicsList), null, newItemLoading)}
 
             <button className="button button__main button__long"
                 disabled={newItemLoading}

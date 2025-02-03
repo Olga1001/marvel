@@ -14,6 +14,9 @@ const CharSearchForm = () => {
 
     const formik = useFormik({
         initialValues: { charName: '' },
+        validate: value => {
+            setError('');
+        },
         onSubmit: ({ charName }) => {
          
             if (!charName.trim()) {
